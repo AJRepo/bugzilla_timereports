@@ -13,7 +13,6 @@ import datetime
 import urllib
 import bugzilla
 
-
 class BugzillaTimeSummary:
     """Bugzilla Time Summary Class"""
     def __init__(self, sys_args):
@@ -32,7 +31,7 @@ class BugzillaTimeSummary:
 
         worktime = self.calulate_worktime()
 
-        print("Worktime=", worktime)
+        print_v("Worktime=", worktime)
         if self.invoice:
             self.generate_invoice(worktime)
 
