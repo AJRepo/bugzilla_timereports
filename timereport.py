@@ -25,7 +25,7 @@ class BugzillaTimeSummary:
         self.rate = float(0)
         self.setup_args()
 
-        self.print_v("ARGS=", self.products)
+        self.print_v("PRODUCTS=", self.products)
 
         #set start and end dates
         self.set_timeperiod()
