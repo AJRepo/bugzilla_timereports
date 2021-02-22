@@ -31,7 +31,7 @@ class BugzillaTimeSummary:
 
         worktime = self.calulate_worktime()
 
-        print_v("Worktime=", worktime)
+        self.print_v("Worktime=", worktime)
         if self.invoice:
             self.generate_invoice(worktime)
 
