@@ -34,12 +34,15 @@ class BugzillaTimeSummary:
         self.print_v("Worktime=", worktime)
         if self.invoice:
             self.generate_invoice(worktime)
+        else:
+            self.print_v("Not generating invoice", self.invoice)
 
     def setup_args(self):
         """Setup parameters from command line"""
         #setup the defaults
         self.debug = False
         self.invoice = False
+        self.show_assigned_to = False
         self.products = ""
 
         #If need args uncomment below and replace _ with args
@@ -47,16 +50,18 @@ class BugzillaTimeSummary:
         opts = []
         try:
             opts, _ = getopt.getopt(self.args,
-                                    "dp:r:",
-                                    ["debug", "product=", "rate=", "invoice"]
+                                    "dp:r:s",
+                                    ["debug", "product=", "rate=", "invoice",
+                                     "show_assigned_to"]
                                    )
         except getopt.GetoptError:
             print("Usage:\n create_invoice.py [Arguments]\n")
             print("Arguments:")
-            print("  [--debug] Turn on debugging messages")
-            print("  [--product=<product name>]  Use quotes if product has spaces")
-            print("  [--rate=<#>] Float")
-            print("  [--invoice] If set, print an invoice based on --rate")
+            print("  [-d]           [--debug]             Turn on debugging messages")
+            print("  [-p <product>] [--product=<product>] Quote if product has spaces")
+            print("  [-r <#>]       [--rate=<#>]          How much you charge per hour")
+            print("  [-s]           [--show_assigned_to]  Show users in bug report")
+            print("  [--invoice]                          If set, print an invoice based on --rate")
             sys.exit(2)
 
         for opt, arg in opts:
@@ -66,13 +71,13 @@ class BugzillaTimeSummary:
                 self.products = str(arg)
             elif opt in ("-r", "--rate"):
                 self.rate = float(arg)
+            elif opt in ("-s", "--show_assigned_to"):
+                self.show_assigned_to = True
             elif opt == "--invoice":
                 self.invoice = True
 
         #print(self.debug, self.products, self.rate)
         #sys.exit(2)
-
-
 
     def print_v(self, msg, var):
         """ Print if debug is true """
@@ -87,16 +92,17 @@ class BugzillaTimeSummary:
 
         #total = self.rate * worktime
 
+        print('------------------------------------------------------------')
         print(
             f"{'Item':^11}:"
             f"{'Description':^39}:"
-            f"{'Quantity':^13}:"
+            f"{'Quantity':^11}:"
             f"{'Rate':^12}:"
             f"{'Amount':^10}")
         print(
             f"{'Consulting':<11}:"
             f"'Tickets from {self.begin_date} to {self.end_date} :"
-            f"{worktime:6.2f} hours :"
+            f"{worktime:6.2f} hrs :"
             f" ${self.rate:6.2f}/hr :"
             f" ${self.rate * worktime:6.2f}")
 
@@ -161,6 +167,15 @@ class BugzillaTimeSummary:
 
         return worktime
 
+    def pretty_print_bug(self, bug):
+        """
+        Format a bug line suitable for a time report
+        """
+
+        if self.show_assigned_to:
+            print(f"#{bug.id:<5} : {bug.assigned_to} : {bug.status:<15} : {bug.summary}")
+        else:
+            print(f"#{bug.id:<5} : {bug.status:<15} : {bug.summary}")
 
     def calculate_worktime(self, bzapi, base_url):
         """
@@ -188,7 +203,6 @@ class BugzillaTimeSummary:
                     "&chfield=votes&chfield=status_whiteboard&"
                     )
 
-
         q_url = (base_url + "/buglist.cgi"
                  + "?chfieldfrom=" + str(begin_date)
                  + "&chfieldto=" + str(end_date)
@@ -206,18 +220,21 @@ class BugzillaTimeSummary:
 
         bugs = bzapi.query(query)
 
-        #print(bugs)
-
         num_bugs = len(bugs)
-        #print(num_bugs, "AAA", bugs)
+
+        #self.print_v("RAW BUGS=", bugs)
+        self.print_v("BUGS TYPE=", type(bugs))
         i = 0
         list_of_bugs = ""
 
-        #print(bugs[1].bug_status)
         total_time = 0
 
         while i < num_bugs:
-            print(bugs[i])
+            self.print_v("BUG TYPE", type(bugs[i]))
+            if self.debug:
+                print(bugs[i])
+            self.print_v("BUGFIELDS", bugs[i].bugzilla.bugfields)
+            self.pretty_print_bug(bugs[i])
             list_of_bugs = str(list_of_bugs) + str(bugs[i].id)
             raw_bug_history = bugs[i].get_history_raw()['bugs']
             #print("TYPE=", type(raw_bug_history))
@@ -245,8 +262,6 @@ class BugzillaTimeSummary:
                                 total_time += this_time
                             else:
                                 self.print_v("NOT THIS DATE", history_entry['when'])
-            #for xx in foo:
-            #    print(xx)
             i += 1
             if i < num_bugs:
                 list_of_bugs += ","
