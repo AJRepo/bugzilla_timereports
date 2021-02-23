@@ -27,7 +27,8 @@ class BugzillaTimeSummary:
         self.print_v("PRODUCTS=", self.products)
 
         #set start and end dates
-        if self.begin_date == "" and self.end_date == "":
+        if self.begin_date == "" or self.end_date == "" or self.begin_date == 'last_month':
+            self.print_v("dates not set or = last_month", self.end_date)
             self.set_timeperiod()
 
         worktime = self.calulate_worktime()
@@ -64,6 +65,8 @@ class BugzillaTimeSummary:
             print("  [-p <product>]    [--product=<product>]       Quote if product has spaces")
             print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]   End Date for Report")
             print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>] Begin Date for Report")
+            print("    BOTH begin_date and end_date must be set if you choose this option")
+            print("    if either begin_date or end_date is not set then time period is last month")
             print("  [-r <#>]          [--rate=<#>]                Invoice rate per hour")
             print("  [-s]              [--show_assigned_to]        Show users in bug report")
             print("  [--invoice]                          If set, print an invoice based on --rate")
