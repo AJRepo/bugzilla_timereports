@@ -27,7 +27,8 @@ class BugzillaTimeSummary:
         self.print_v("PRODUCTS=", self.products)
 
         #set start and end dates
-        self.set_timeperiod()
+        if self.begin_date == "" and self.end_date == "":
+            self.set_timeperiod()
 
         worktime = self.calulate_worktime()
 
@@ -44,29 +45,37 @@ class BugzillaTimeSummary:
         self.invoice = False
         self.show_assigned_to = False
         self.products = ""
+        self.begin_date = ""
+        self.end_date = ""
 
         #If need args uncomment below and replace _ with args
         #args = []
         opts = []
         try:
             opts, _ = getopt.getopt(self.args,
-                                    "dp:r:s",
+                                    "dp:r:sb:e:",
                                     ["debug", "product=", "rate=", "invoice",
-                                     "show_assigned_to"]
+                                     "show_assigned_to", "begin_date=", "end_date="]
                                    )
         except getopt.GetoptError:
             print("Usage:\n create_invoice.py [Arguments]\n")
             print("Arguments:")
-            print("  [-d]           [--debug]             Turn on debugging messages")
-            print("  [-p <product>] [--product=<product>] Quote if product has spaces")
-            print("  [-r <#>]       [--rate=<#>]          How much you charge per hour")
-            print("  [-s]           [--show_assigned_to]  Show users in bug report")
+            print("  [-d]              [--debug]                   Turn on debugging messages")
+            print("  [-p <product>]    [--product=<product>]       Quote if product has spaces")
+            print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]   End Date for Report")
+            print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>] Begin Date for Report")
+            print("  [-r <#>]          [--rate=<#>]                Invoice rate per hour")
+            print("  [-s]              [--show_assigned_to]        Show users in bug report")
             print("  [--invoice]                          If set, print an invoice based on --rate")
             sys.exit(2)
 
         for opt, arg in opts:
             if opt in ("-d", "--debug"):
                 self.debug = True
+            elif opt in ("-b", "--begin_date"):
+                self.begin_date = str(arg)
+            elif opt in ("-e", "--end_date"):
+                self.end_date = str(arg)
             elif opt in ("-p", "--product"):
                 self.products = str(arg)
             elif opt in ("-r", "--rate"):
@@ -76,6 +85,7 @@ class BugzillaTimeSummary:
             elif opt == "--invoice":
                 self.invoice = True
 
+        #I suppose we could check if invoice=True and rate="" here
         #print(self.debug, self.products, self.rate)
         #sys.exit(2)
 
