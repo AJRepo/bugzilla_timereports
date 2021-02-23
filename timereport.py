@@ -229,6 +229,9 @@ class BugzillaTimeSummary:
 
         total_time = 0
 
+        print(f"Time Summary from {begin_date} to {end_date}")
+        print('------------------------------------------------------------')
+
         while i < num_bugs:
             self.print_v("BUG TYPE", type(bugs[i]))
             if self.debug:
