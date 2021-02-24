@@ -117,7 +117,7 @@ class BugzillaTimeSummary:
             f"'Tickets from {self.begin_date} to {self.end_date} :"
             f"{worktime:6.2f} hrs :"
             f" ${self.rate:6.2f}/hr :"
-            f" ${self.rate * worktime:6.2f}")
+            f"  ${self.rate * worktime:>7.2f}")
 
     def set_timeperiod(self):
         """set the start and end times for these calculations"""
