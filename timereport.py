@@ -114,7 +114,7 @@ class BugzillaTimeSummary:
             f"{'Amount':^10}")
         print(
             f"{'Consulting':<11}:"
-            f"'Tickets from {self.begin_date} to {self.end_date} :"
+            f" Tickets from {self.begin_date} to {self.end_date} :"
             f"{worktime:6.2f} hrs :"
             f" ${self.rate:6.2f}/hr :"
             f"  ${self.rate * worktime:>7.2f}")
