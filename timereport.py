@@ -23,7 +23,6 @@ class BugzillaTimeSummary:
         self.args = sys_args  #pass args to Class variable
         self.debug = False
         self.products = ""
-        self.rate = float(0)
         self.setup_args()
 
         self.print_v("PRODUCTS=", self.products)
@@ -50,7 +49,9 @@ class BugzillaTimeSummary:
         self.products = ""
         self.begin_date = ""
         self.end_date = ""
+        self.rate = float(0)
         self.wrap = False
+        rate_set = False
 
         #If need args uncomment below and replace _ with args
         #args = []
@@ -65,16 +66,18 @@ class BugzillaTimeSummary:
         except getopt.GetoptError:
             print("Usage:\n create_invoice.py [Arguments]\n")
             print("Arguments:")
-            print("  [-d]              [--debug]                   Turn on debugging messages")
-            print("  [-p <product>]    [--product=<product>]       Quote if product has spaces")
-            print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]   End Date for Report")
-            print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>] Begin Date for Report")
-            print("    BOTH begin_date and end_date must be set if you choose this option")
-            print("    if either begin_date or end_date is not set then time period is last month")
-            print("  [-r <#>]          [--rate=<#>]                Invoice rate per hour")
-            print("  [-s]              [--show_assigned_to]        Show users in bug report")
-            print("  [-w]              [--wrap_long]               Wrap long lines")
-            print("  [-i] [--invoice]                              Print an invoice using --rate")
+            print("  [-d]              [--debug]                    Turn on debugging messages")
+            print("  [-p <product>]    [--product=<product>]        Quote if product has spaces")
+            print("  [-r <#>]          [--rate=<#>]                 Invoice rate per hour")
+            print("  [-s]              [--show_assigned_to]         Show users in bug report")
+            print("  [-w]              [--wrap_long]                Wrap long lines")
+            print("  [-i] [--invoice]                               Print an invoice using --rate")
+            print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date")
+            print("          default = first day of last month")
+            print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date")
+            print("          default = last day of last month")
+            print(" ")
+            print("          BOTH begin_date and end_date must be defined or both unset")
             sys.exit(2)
 
         for opt, arg in opts:
@@ -88,6 +91,7 @@ class BugzillaTimeSummary:
                 self.products = str(arg)
             elif opt in ("-r", "--rate"):
                 self.rate = float(arg)
+                rate_set = True
             elif opt in ("-s", "--show_assigned_to"):
                 self.show_assigned_to = True
             elif opt in ("-w", "--wrap_long"):
@@ -96,8 +100,11 @@ class BugzillaTimeSummary:
                 self.invoice = True
 
         #I suppose we could check if invoice=True and rate="" here
-        #print(self.debug, self.products, self.rate)
-        #sys.exit(2)
+        if not rate_set and self.invoice:
+            print("Error: Invoice option chosen but rate not set")
+            print("       Use --rate=<float> if using invoicing.")
+            print("       Exiting.")
+            exit(1)
 
     def print_v(self, msg, var):
         """ Print if debug is true """
@@ -105,10 +112,9 @@ class BugzillaTimeSummary:
             print(msg, var)
 
     def generate_invoice(self, worktime):
-        """Generate an invoice"""
-        if self.rate == "" or self.rate <= 0:
-            print("Error in self.rate", self.rate)
-            exit(1)
+        """Generate an invoice
+            Note: Default rate = 0.00
+        """
 
         #total = self.rate * worktime
 
