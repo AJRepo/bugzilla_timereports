@@ -11,7 +11,9 @@ import sys
 import getopt
 import datetime
 import urllib
+import textwrap
 import bugzilla
+
 
 class BugzillaTimeSummary:
     """Bugzilla Time Summary Class"""
@@ -48,15 +50,17 @@ class BugzillaTimeSummary:
         self.products = ""
         self.begin_date = ""
         self.end_date = ""
+        self.wrap = False
 
         #If need args uncomment below and replace _ with args
         #args = []
         opts = []
         try:
             opts, _ = getopt.getopt(self.args,
-                                    "dp:r:sb:e:",
+                                    "dp:r:swib:e:",
                                     ["debug", "product=", "rate=", "invoice",
-                                     "show_assigned_to", "begin_date=", "end_date="]
+                                     "show_assigned_to", "begin_date=", "end_date=",
+                                     "wrap_long"]
                                    )
         except getopt.GetoptError:
             print("Usage:\n create_invoice.py [Arguments]\n")
@@ -69,7 +73,8 @@ class BugzillaTimeSummary:
             print("    if either begin_date or end_date is not set then time period is last month")
             print("  [-r <#>]          [--rate=<#>]                Invoice rate per hour")
             print("  [-s]              [--show_assigned_to]        Show users in bug report")
-            print("  [--invoice]                          If set, print an invoice based on --rate")
+            print("  [-w]              [--wrap_long]               Wrap long lines")
+            print("  [-i] [--invoice]                              Print an invoice using --rate")
             sys.exit(2)
 
         for opt, arg in opts:
@@ -85,7 +90,9 @@ class BugzillaTimeSummary:
                 self.rate = float(arg)
             elif opt in ("-s", "--show_assigned_to"):
                 self.show_assigned_to = True
-            elif opt == "--invoice":
+            elif opt in ("-w", "--wrap_long"):
+                self.wrap = True
+            elif opt in ("-i", "--invoice"):
                 self.invoice = True
 
         #I suppose we could check if invoice=True and rate="" here
@@ -180,15 +187,41 @@ class BugzillaTimeSummary:
 
         return worktime
 
-    def pretty_print_bug(self, bug):
+    def pretty_print_bug(self, bug, id_width):
         """
         Format a bug line suitable for a time report
+        id_width is the space given for the bugid in printing
         """
 
-        if self.show_assigned_to:
-            print(f"#{bug.id:<5} : {bug.assigned_to} : {bug.status:<15} : {bug.summary}")
+        first_line = True
+        space = " "
+        summary_width = 40
+        if self.wrap and len(bug.summary) > 0:
+            summary_list = textwrap.wrap(bug.summary,
+                                         width=summary_width,
+                                         subsequent_indent="  "
+                                        )
         else:
-            print(f"#{bug.id:<5} : {bug.status:<15} : {bug.summary}")
+            summary_list = [bug.summary]
+        if self.show_assigned_to:
+            for summary in summary_list:
+                if first_line:
+                    print(f"#{bug.id:<{id_width}} : "
+                          f"{bug.assigned_to:<36} : "
+                          f"{bug.status:<15} : "
+                          f"{summary}"
+                          )
+                    first_line = False
+                else:
+                    print(f" {space:<{id_width}} : {space:<36} : {space:<15} : {summary}")
+        else:
+            for summary in summary_list:
+                #print(f"#{bug.id:<5} : {bug.status:<15} : {bug_summary}")
+                if first_line:
+                    print(f"#{bug.id:<{id_width}} : {bug.status:<15} : {summary}")
+                    first_line = False
+                else:
+                    print(f" {space:<{id_width}} : {space:<15} : {summary}")
 
     def calculate_worktime(self, bzapi, base_url):
         """
@@ -239,6 +272,7 @@ class BugzillaTimeSummary:
         self.print_v("BUGS TYPE=", type(bugs))
         i = 0
         list_of_bugs = ""
+        id_width = 3
 
         total_time = 0
 
@@ -250,7 +284,9 @@ class BugzillaTimeSummary:
             if self.debug:
                 print(bugs[i])
             self.print_v("BUGFIELDS", bugs[i].bugzilla.bugfields)
-            self.pretty_print_bug(bugs[i])
+            if len(str(bugs[i].id)) > id_width:
+                id_width = len(str(bugs[i].bug_id)) + 1
+            self.pretty_print_bug(bugs[i], id_width)
             list_of_bugs = str(list_of_bugs) + str(bugs[i].id)
             raw_bug_history = bugs[i].get_history_raw()['bugs']
             #print("TYPE=", type(raw_bug_history))
