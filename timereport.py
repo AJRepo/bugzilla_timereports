@@ -64,7 +64,7 @@ class BugzillaTimeSummary:
                                      "wrap_long"]
                                    )
         except getopt.GetoptError:
-            print("Usage:\n create_invoice.py [Arguments]\n")
+            print("Usage:\n timereport.py [Arguments]\n")
             print("Arguments:")
             print("  [-d]              [--debug]                    Turn on debugging messages")
             print("  [-p <product>]    [--product=<product>]        Quote if product has spaces")
