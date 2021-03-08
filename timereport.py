@@ -73,11 +73,10 @@ class BugzillaTimeSummary:
             print("  [-w]              [--wrap_long]                Wrap long lines")
             print("  [-i] [--invoice]                               Print an invoice using --rate")
             print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date")
-            print("          default = first day of last month")
             print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date")
-            print("          default = last day of last month")
             print(" ")
-            print("          BOTH begin_date and end_date must be defined or both unset")
+            print("    If only --begin_date is set, then --end_date defaults to today")
+            print("    If both --begin_date and --end_date are unset, then defaults to last month")
             sys.exit(2)
 
         for opt, arg in opts:
