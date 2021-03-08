@@ -4,6 +4,7 @@ Is built to use Bugzilla Tools (https://pypi.org/project/bugzillatools/) to gene
 
 If you use the --invoice flag then you also have to specify the --rate flag. 
 
+```
 Usage:
  timereport.py [Arguments]
 
@@ -20,7 +21,7 @@ Arguments:
           default = last day of last month
  
           BOTH begin_date and end_date must be defined or both unset
-
+```
 
 See https://pypi.org/project/bugzillatools/ for the creation of the .bugzillarc file. 
 If you setup the bugzilla user to limit access to a particular product then you don't have to 
