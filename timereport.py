@@ -30,7 +30,7 @@ class BugzillaTimeSummary:
         #set start and end dates
         if self.begin_date == "" or self.end_date == "" or self.begin_date == 'last_month':
             self.print_v("dates not set or = last_month", self.end_date)
-            self.set_timeperiod()
+            self.set_timeperiod_lastmonth()
 
         worktime = self.calulate_worktime()
 
@@ -106,6 +106,14 @@ class BugzillaTimeSummary:
             print("       Exiting.")
             exit(1)
 
+        #If end_date is not set - make it today
+        if self.begin_date == "this_month":
+            self.begin_date = datetime.date.today().replace(day=1)
+
+        #If end_date is not set - make it today
+        if self.end_date == "":
+            self.end_date = datetime.date.today()
+
     def print_v(self, msg, var):
         """ Print if debug is true """
         if self.debug:
@@ -132,7 +140,7 @@ class BugzillaTimeSummary:
             f" ${self.rate:6.2f}/hr :"
             f"  ${self.rate * worktime:>7.2f}")
 
-    def set_timeperiod(self):
+    def set_timeperiod_lastmonth(self):
         """set the start and end times for these calculations"""
         tmp_date = datetime.date.today().replace(day=1)
         #end date = last day of last month
@@ -146,7 +154,7 @@ class BugzillaTimeSummary:
         is generally found at /summarize_time.cgi.
         """
 
-        #Set by get_timeperiod()
+        #Set by get_timeperiod_lastmonth()
         if self.begin_date == "" or self.end_date == "":
             print("Error in setting dates")
             exit(1)
