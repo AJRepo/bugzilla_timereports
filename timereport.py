@@ -40,6 +40,21 @@ class BugzillaTimeSummary:
         else:
             self.print_v("Not generating invoice", self.invoice)
 
+    def print_usage(self):
+        print("Usage:\n timereport.py [Arguments]\n")
+        print("Arguments:")
+        print("  [-d]              [--debug]                    Turn on debugging messages")
+        print("  [-p <product>]    [--product=<product>]        Quote if product has spaces")
+        print("  [-r <#>]          [--rate=<#>]                 Invoice rate per hour")
+        print("  [-s]              [--show_assigned_to]         Show users in bug report")
+        print("  [-w]              [--wrap_long]                Wrap long lines")
+        print("  [-i] [--invoice]                               Print an invoice using --rate")
+        print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date")
+        print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date")
+        print(" ")
+        print("    If only --begin_date is set, then --end_date defaults to today")
+        print("    If both --begin_date and --end_date are unset, then defaults to last month")
+
     def setup_args(self):
         """Setup parameters from command line"""
         #setup the defaults
@@ -52,6 +67,8 @@ class BugzillaTimeSummary:
         self.rate = float(0)
         self.wrap = False
         rate_set = False
+        BOLD = '\033[1m'
+        RESET = '\033[0m'
 
         #If need args uncomment below and replace _ with args
         #args = []
@@ -61,27 +78,24 @@ class BugzillaTimeSummary:
                                     "dp:r:swib:e:",
                                     ["debug", "product=", "rate=", "invoice",
                                      "show_assigned_to", "begin_date=", "end_date=",
+                                     "begin-date=", "end-date=",
                                      "wrap_long"]
                                    )
         except getopt.GetoptError:
-            print("Usage:\n timereport.py [Arguments]\n")
-            print("Arguments:")
-            print("  [-d]              [--debug]                    Turn on debugging messages")
-            print("  [-p <product>]    [--product=<product>]        Quote if product has spaces")
-            print("  [-r <#>]          [--rate=<#>]                 Invoice rate per hour")
-            print("  [-s]              [--show_assigned_to]         Show users in bug report")
-            print("  [-w]              [--wrap_long]                Wrap long lines")
-            print("  [-i] [--invoice]                               Print an invoice using --rate")
-            print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date")
-            print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date")
-            print(" ")
-            print("    If only --begin_date is set, then --end_date defaults to today")
-            print("    If both --begin_date and --end_date are unset, then defaults to last month")
+            self.print_usage()
             sys.exit(2)
 
         for opt, arg in opts:
             if opt in ("-d", "--debug"):
                 self.debug = True
+            elif opt in ("--end-date"):
+                print(f"\nError: it's {BOLD}underscore{RESET} , not hyphens. end-date -> end_date\n")
+                self.print_usage()
+                sys.exit(2)
+            elif opt in ("--begin-date"):
+                print(f"\nError: it's {BOLD}underscore{RESET}, not hyphens. begin-date -> begin_date\n")
+                self.print_usage()
+                sys.exit(2)
             elif opt in ("-b", "--begin_date"):
                 self.begin_date = str(arg)
             elif opt in ("-e", "--end_date"):
