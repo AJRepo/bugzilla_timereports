@@ -48,7 +48,7 @@ class BugzillaTimeSummary:
         print("  [-r <#>]          [--rate=<#>]                 Invoice rate per hour")
         print("  [-s]              [--show_assigned_to]         Show users in bug report")
         print("  [-w]              [--wrap_long]                Wrap long lines")
-        print("  [-i] [--invoice]                               Print an invoice using --rate")
+        print("  [-i]              [--invoice]                  Print an invoice using --rate")
         print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date")
         print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date")
         print(" ")

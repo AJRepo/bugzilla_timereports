@@ -16,7 +16,7 @@ Arguments:
   [-r <#>]          [--rate=<#>]                 Invoice rate per hour
   [-s]              [--show_assigned_to]         Show users in bug report
   [-w]              [--wrap_long]                Wrap long lines
-  [-i] [--invoice]                               Print an invoice using --rate
+  [-i]              [--invoice]                  Print an invoice using --rate
   [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date
   [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date
  
