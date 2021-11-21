@@ -205,7 +205,7 @@ class BugzillaTimeSummary:
             print("Error in type connection to", base_url)
 
         if not bzapi.logged_in:
-            print("This example requires cached login credentials for %s" % base_url)
+            print("Error: Not Logged in. This example requires cached login credentials for %s" % base_url)
             exit(0)
         #assert bzapi.logged_in
         #assert "asdfasdfa"
