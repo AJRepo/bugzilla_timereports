@@ -12,6 +12,7 @@ import getopt
 import datetime
 import urllib
 import textwrap
+from dateutil.parser import parse
 import bugzilla
 
 
@@ -20,15 +21,17 @@ class BugzillaTimeSummary:
     def __init__(self, sys_args):
 
         #Eventually support multiple products, now just one
-        self.args = sys_args  #pass args to Class variable
+        #self.args = sys_args  #pass args to Class variable
         self.debug = False
-        self.products = ""
-        self.setup_args()
+        self.begin_date = ""
+        self.end_date = ""
+        self.setup_args(sys_args)
 
-        self.print_v("PRODUCTS=", self.products)
+        self.check_begin_date()
+        self.check_end_date()
 
         #set start and end dates
-        if self.begin_date == "" or self.end_date == "" or self.begin_date == 'last_month':
+        if  self.end_date == "":
             self.print_v("dates not set or = last_month", self.end_date)
             self.set_timeperiod_lastmonth()
 
@@ -40,7 +43,9 @@ class BugzillaTimeSummary:
         else:
             self.print_v("Not generating invoice", self.invoice)
 
-    def print_usage(self):
+    @staticmethod
+    def print_usage():
+        """Print the Usage of the program as help text"""
         print("Usage:\n timereport.py [Arguments]\n")
         print("Arguments:")
         print("  [-d]              [--debug]                    Turn on debugging messages")
@@ -55,7 +60,7 @@ class BugzillaTimeSummary:
         print("    If only --begin_date is set, then --end_date defaults to today")
         print("    If both --begin_date and --end_date are unset, then defaults to last month")
 
-    def setup_args(self):
+    def setup_args(self, args):
         """Setup parameters from command line"""
         #setup the defaults
         self.debug = False
@@ -67,14 +72,14 @@ class BugzillaTimeSummary:
         self.rate = float(0)
         self.wrap = False
         rate_set = False
-        BOLD = '\033[1m'
-        RESET = '\033[0m'
+        bold = '\033[1m'
+        reset = '\033[0m'
 
         #If need args uncomment below and replace _ with args
         #args = []
         opts = []
         try:
-            opts, _ = getopt.getopt(self.args,
+            opts, _ = getopt.getopt(args,
                                     "dp:r:swib:e:",
                                     ["debug", "product=", "rate=", "invoice",
                                      "show_assigned_to", "begin_date=", "end_date=",
@@ -88,12 +93,12 @@ class BugzillaTimeSummary:
         for opt, arg in opts:
             if opt in ("-d", "--debug"):
                 self.debug = True
-            elif opt in ("--end-date"):
-                print(f"\nError: it's {BOLD}underscore{RESET} , not hyphens. end-date -> end_date\n")
+            elif opt in "--end-date":
+                print(f"\nError: {bold}underscore{reset}, not hyphens. end-date -> end_date\n")
                 self.print_usage()
                 sys.exit(2)
-            elif opt in ("--begin-date"):
-                print(f"\nError: it's {BOLD}underscore{RESET}, not hyphens. begin-date -> begin_date\n")
+            elif opt in "--begin-date":
+                print(f"\nError: {bold}underscore{reset}, not hyphens. begin-date -> begin_date\n")
                 self.print_usage()
                 sys.exit(2)
             elif opt in ("-b", "--begin_date"):
@@ -117,15 +122,27 @@ class BugzillaTimeSummary:
             print("Error: Invoice option chosen but rate not set")
             print("       Use --rate=<float> if using invoicing.")
             print("       Exiting.")
-            exit(1)
+            sys.exit(1)
 
-        #If end_date is not set - make it today
-        if self.begin_date == "this_month":
-            self.begin_date = datetime.date.today().replace(day=1)
 
-        #If end_date is not set - make it today
+
+    def check_begin_date(self):
+        """ make sure dates are date objects """
+        #If begin_date is not set - make it today
+        if self.begin_date == "this_month" or self.begin_date == "":
+            self.begin_date = datetime.datetime.today().replace(day=1, hour=00, minute=00)
+        elif self.begin_date == "last_month":
+            self.set_timeperiod_lastmonth()
+        else:
+            self.begin_date = parse(self.begin_date)
+
+    def check_end_date(self):
+        """ make sure dates are date objects """
+        #If end_date is not set - make it the end of today
         if self.end_date == "":
-            self.end_date = datetime.date.today()
+            self.end_date = datetime.datetime.today().replace(hour=23, minute=59, second=59)
+        else:
+            self.end_date = parse(self.end_date)
 
     def print_v(self, msg, var):
         """ Print if debug is true """
@@ -170,7 +187,7 @@ class BugzillaTimeSummary:
         #Set by get_timeperiod_lastmonth()
         if self.begin_date == "" or self.end_date == "":
             print("Error in setting dates")
-            exit(1)
+            sys.exit(1)
 
 
         #print(TMP_DATE)
@@ -191,7 +208,7 @@ class BugzillaTimeSummary:
             print("[DEFAULT]")
             print("url=https://www.example.com")
             print("api_key=your_api_key_here")
-            exit(2)
+            sys.exit(2)
 
         #If you don't have a ~/.bugzillarc file then you'll have to have an API key
         #api_key = input("Enter Bugzilla API Key: ")
@@ -205,15 +222,14 @@ class BugzillaTimeSummary:
             print("Error in type connection to", base_url)
 
         if not bzapi.logged_in:
-            print("Error: Not Logged in. This example requires cached login credentials for %s" % base_url)
+            print("Error: Not Logged in. Lookup API/cached credentials for %s" % base_url)
             print("  Try creating a .bugzillarc file with the following information in it")
             print("    [%s]" % base_url)
             print("    url=%s" % base_url)
             print("    user=<your username>")
             print("    api_key=<the api key you get at %s/userprefs.cgi?tab=apikey>" % base_url)
-            exit(0)
+            sys.exit(0)
         #assert bzapi.logged_in
-        #assert "asdfasdfa"
 
         worktime = self.calculate_worktime(bzapi, base_url)
 
@@ -225,6 +241,7 @@ class BugzillaTimeSummary:
         id_width is the space given for the bugid in printing
         """
 
+        #print("AAAAAA = ", bug.asdfasdfasdf)
         first_line = True
         space = " "
         summary_width = 40
@@ -255,6 +272,38 @@ class BugzillaTimeSummary:
                 else:
                     print(f" {space:<{id_width}} : {space:<15} : {summary}")
 
+    def add_historical_time(self, raw_bug_history, begin_date, end_date):
+        """
+        Given historical data, add up all work done between two dates
+        """
+        total_time = 0
+        for history_items in raw_bug_history:
+            #type=dict
+            #print("BAZ=", history_items)
+            #print("TYPEBAZ=", type(history_items))
+            #print("LENBAZ=", len(history_items))
+            #history_items = [history, id (bugid), alias]
+            for key, value in history_items.items():
+                if key == 'history':
+                    #print("BAZHIST=", key, value)
+                    #print("BAZHISTTYPE=", type(value))
+                    for history_entry in value:
+                        #print("HHH=", history_entry)
+                        #print("DDD=", history_entry['when'])
+                        if (history_entry['changes'][0]['field_name'] == 'work_time' and
+                                begin_date < parse(str(history_entry['when'])) < end_date
+                           ):
+                            this_time = float(history_entry['changes'][0]['added'])
+                            self.print_v("THISTIME=", this_time)
+                            self.print_v("THIS DATE", history_entry['when'])
+                            self.print_v("THIS DATE", parse(str(history_entry['when'])))
+                            total_time += this_time
+                        else:
+                            self.print_v("BEGIN DATE", begin_date)
+                            self.print_v("NOT THIS DATE", history_entry['when'])
+                            self.print_v("END DATE", end_date)
+        return total_time
+
     def calculate_worktime(self, bzapi, base_url):
         """
         Given a start and end date find work done in that time range
@@ -262,8 +311,6 @@ class BugzillaTimeSummary:
 
         #Currently we limit to just one product, eventually expand to multiple ones
         product = self.products
-        begin_date = self.begin_date
-        end_date = self.end_date
 
         if product == "":
             query_product = ""
@@ -282,8 +329,8 @@ class BugzillaTimeSummary:
                     )
 
         q_url = (base_url + "/buglist.cgi"
-                 + "?chfieldfrom=" + str(begin_date)
-                 + "&chfieldto=" + str(end_date)
+                 + "?chfieldfrom=" + str(self.begin_date)
+                 + "&chfieldto=" + str(self.end_date)
                  + str(chfields)
                  + str(query_product)
                  + "&query_format=advanced")
@@ -294,7 +341,8 @@ class BugzillaTimeSummary:
 
         query = bzapi.url_to_query(q_url)
 
-        #print(query)
+        # Query does have work_time, but is returned blank by the API
+        # self.print_v("QUERY=", query)
 
         bugs = bzapi.query(query)
 
@@ -308,44 +356,32 @@ class BugzillaTimeSummary:
 
         total_time = 0
 
-        print(f"Time Summary from {begin_date} to {end_date}")
+        print(f"Time Summary from {self.begin_date} to {self.end_date}")
         print('------------------------------------------------------------')
 
         while i < num_bugs:
+            #DEBUG: Get class info
+            bugs[i].asdfasdfasdf = 0
+            self.print_v("DIR=", dir(bugs[i]))
             self.print_v("BUG TYPE", type(bugs[i]))
+            #self.print_v("WORK ", bugs[i].work_time)
             if self.debug:
                 print(bugs[i])
             self.print_v("BUGFIELDS", bugs[i].bugzilla.bugfields)
             if len(str(bugs[i].id)) > id_width:
                 id_width = len(str(bugs[i].bug_id)) + 1
-            self.pretty_print_bug(bugs[i], id_width)
-            list_of_bugs = str(list_of_bugs) + str(bugs[i].id)
             raw_bug_history = bugs[i].get_history_raw()['bugs']
             #print("TYPE=", type(raw_bug_history))
             #print("LEN=", len(raw_bug_history))
             #print(i, "=", raw_bug_history)
-            for history_items in raw_bug_history:
-                #type=dict
-                #print("BAZ=", history_items)
-                #print("TYPEBAZ=", type(history_items))
-                #print("LENBAZ=", len(history_items))
-                #history_items = [history, id (bugid), alias]
-                for key, value in history_items.items():
-                    if key == 'history':
-                        #print("BAZHIST=", key, value)
-                        #print("BAZHISTTYPE=", type(value))
-                        for history_entry in value:
-                            #print("HHH=", history_entry)
-                            #print("DDD=", history_entry['when'])
-                            if (history_entry['changes'][0]['field_name'] == 'work_time' and
-                                    begin_date < history_entry['when'] < end_date
-                               ):
-                                this_time = float(history_entry['changes'][0]['added'])
-                                self.print_v("THISTIME=", this_time)
-                                self.print_v("THIS DATE", history_entry['when'])
-                                total_time += this_time
-                            else:
-                                self.print_v("NOT THIS DATE", history_entry['when'])
+            total_time = self.add_historical_time(raw_bug_history, self.begin_date, self.end_date)
+            bugs[i].asdfasdfasdf = total_time
+
+            #Print this bug
+            self.print_v("TIME=", bugs[i].asdfasdfasdf)
+            self.pretty_print_bug(bugs[i], id_width)
+            list_of_bugs = str(list_of_bugs) + str(bugs[i].id)
+            #Iterate to next bug
             i += 1
             if i < num_bugs:
                 list_of_bugs += ","
@@ -368,8 +404,6 @@ class BugzillaTimeSummary:
         #print(query)
 
         return total_time
-
-
 
 if __name__ == "__main__":
     #calulate_worktime()
