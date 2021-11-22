@@ -206,6 +206,11 @@ class BugzillaTimeSummary:
 
         if not bzapi.logged_in:
             print("Error: Not Logged in. This example requires cached login credentials for %s" % base_url)
+            print("  Try creating a .bugzillarc file with the following information in it")
+            print("    [%s]" % base_url)
+            print("    url=%s" % base_url)
+            print("    user=<your username>")
+            print("    api_key=<the api key you get at %s/userprefs.cgi?tab=apikey>" % base_url)
             exit(0)
         #assert bzapi.logged_in
         #assert "asdfasdfa"
