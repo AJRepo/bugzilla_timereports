@@ -356,7 +356,7 @@ class BugzillaTimeSummary:
 
         total_time = 0
 
-        print(f"Time Summary from {self.begin_date} to {self.end_date}")
+        print(f"Time Summary from {self.begin_date:%Y-%m-%d} to {self.end_date:%Y-%m-%d}")
         print('------------------------------------------------------------')
 
         while i < num_bugs:
