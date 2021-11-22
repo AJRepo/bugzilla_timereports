@@ -165,7 +165,7 @@ class BugzillaTimeSummary:
             f"{'Amount':^10}")
         print(
             f"{'Consulting':<11}:"
-            f" Tickets from {self.begin_date} to {self.end_date} :"
+            f" Tickets from {self.begin_date:%Y-%m-%d} to {self.end_date:%Y-%m-%d} :"
             f"{worktime:6.2f} hrs :"
             f" ${self.rate:6.2f}/hr :"
             f"  ${self.rate * worktime:>7.2f}")
@@ -241,7 +241,7 @@ class BugzillaTimeSummary:
         id_width is the space given for the bugid in printing
         """
 
-        #print("AAAAAA = ", bug.asdfasdfasdf)
+        #print("AAAAAA = ", bug.total_hours_this_period)
         first_line = True
         space = " "
         summary_width = 40
@@ -360,8 +360,9 @@ class BugzillaTimeSummary:
         print('------------------------------------------------------------')
 
         while i < num_bugs:
-            #DEBUG: Get class info
-            bugs[i].asdfasdfasdf = 0
+            #We don't want total hours worked, just total hours for just this time period
+            #We store them in the bugs object which could be dangerous so have a long name
+            bugs[i].total_hours_this_period = 0
             self.print_v("DIR=", dir(bugs[i]))
             self.print_v("BUG TYPE", type(bugs[i]))
             #self.print_v("WORK ", bugs[i].work_time)
@@ -375,10 +376,10 @@ class BugzillaTimeSummary:
             #print("LEN=", len(raw_bug_history))
             #print(i, "=", raw_bug_history)
             total_time = self.add_historical_time(raw_bug_history, self.begin_date, self.end_date)
-            bugs[i].asdfasdfasdf = total_time
+            bugs[i].total_hours_this_period = total_time
 
             #Print this bug
-            self.print_v("TIME=", bugs[i].asdfasdfasdf)
+            self.print_v("TIME=", bugs[i].total_hours_this_period)
             self.pretty_print_bug(bugs[i], id_width)
             list_of_bugs = str(list_of_bugs) + str(bugs[i].id)
             #Iterate to next bug
