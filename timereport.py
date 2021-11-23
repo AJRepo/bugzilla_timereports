@@ -255,9 +255,9 @@ class BugzillaTimeSummary:
 
         #print("AAAAAA = ", bug.total_hours_this_period)
         first_line = True
-        show_hours = False
+        show_hours = True
         space = " "
-        summary_width =40
+        summary_width = 40
         if self.show_assigned_to:
             assigned_to = bug.assigned_to
             awidth = 25
@@ -266,6 +266,14 @@ class BugzillaTimeSummary:
             assigned_to = " "
             awidth = 0
             adelim = " "
+        if show_hours:
+            hours = bug.total_hours_this_period
+            hwidth = 5
+            hdelim = ":"
+        else:
+            hours = " "
+            hwidth = 0
+            hdelim = " "
 
         #Setup multilength lines if width > 40
         summary_list = self.wrap_summary_lines(summary_width, bug)
@@ -274,6 +282,7 @@ class BugzillaTimeSummary:
         for summary in summary_list:
             if first_line:
                 print(f"#{bug.id:<{id_width}} : "
+                      f"{hours:<{hwidth}}{hdelim} "
                       f"{assigned_to:<{awidth}}{adelim} "
                       f"{bug.status:<15} : "
                       f"{summary}"
@@ -281,6 +290,7 @@ class BugzillaTimeSummary:
                 first_line = False
             else:
                 print(f" {space:<{id_width}} : "
+                      f"{space:<{hwidth}}{hdelim} "
                       f"{space:<{awidth}}{adelim} "
                       f"{space:<15} : "
                       f"{summary}"
