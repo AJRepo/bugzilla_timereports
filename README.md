@@ -1,8 +1,15 @@
 # bugzilla_timereports
 
+#Why this library? 
+
+* It's nice to have periodic (e.g. weekly) time reports generated that have the amount of time spent just for that week
+* You can generate automated invoices based on these reports over time. 
+* Bugzilla is a really clean/simple bug tracking and time tracking system. It just lacked an automated invoicing/reporting component. This adds that. 
+
+
 Is built to use Python-Bugzilla Tools (https://github.com/python-bugzilla/python-bugzilla) to generate time reports and invoices.
 
-Requires Python 3 and that library. 
+Requires Python 3 and the bugzilla library. 
 
 If you use the --invoice flag then you also have to specify the --rate flag. 
 
@@ -18,7 +25,7 @@ Arguments:
   [-w]              [--wrap_long]                Wrap long lines
   [-i]              [--invoice]                  Print an invoice using --rate
   [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date
-  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date
+  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date (also supports "last_month" and "this_month"
  
     If only --begin_date is set, then --end_date defaults to today
     If both --begin_date and --end_date are unset, then defaults to last month
