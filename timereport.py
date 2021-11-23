@@ -35,7 +35,8 @@ class BugzillaTimeSummary:
             self.print_v("dates not set or = last_month", self.end_date)
             self.set_timeperiod_lastmonth()
 
-        worktime = self.calulate_worktime()
+        (bzapi, base_url) = self.authenticate_to_bz()
+        worktime = self.calculate_worktime(bzapi, base_url)
 
         self.print_v("Worktime=", worktime)
         if self.invoice:
@@ -178,19 +179,16 @@ class BugzillaTimeSummary:
         #begin date = first day of last month
         self.begin_date = self.end_date.replace(day=1)
 
-    def calulate_worktime(self):
+    def authenticate_to_bz(self):
         """
         Function for generating time worked on bugs a report that
         is generally found at /summarize_time.cgi.
         """
 
-        #Set by get_timeperiod_lastmonth()
         if self.begin_date == "" or self.end_date == "":
             print("Error in setting dates")
             sys.exit(1)
 
-
-        #print(TMP_DATE)
 
         self.print_v("Begin Date:", self.begin_date)
         self.print_v("End Date:", self.end_date)
@@ -231,9 +229,7 @@ class BugzillaTimeSummary:
             sys.exit(0)
         #assert bzapi.logged_in
 
-        worktime = self.calculate_worktime(bzapi, base_url)
-
-        return worktime
+        return bzapi, base_url
 
     def wrap_summary_lines(self, summary_width, bug):
         """ Wrap the bug summary to summary_width columns"""
@@ -399,8 +395,8 @@ class BugzillaTimeSummary:
             #print("TYPE=", type(raw_bug_history))
             #print("LEN=", len(raw_bug_history))
             #print(i, "=", raw_bug_history)
-            total_time = self.add_historical_time(raw_bug_history, self.begin_date, self.end_date)
-            bugs[i].total_hours_this_period = total_time
+            bugs[i].total_hours_this_period = self.add_historical_time(raw_bug_history, self.begin_date, self.end_date)
+            total_time = total_time + bugs[i].total_hours_this_period
 
             #Print this bug
             self.print_v("TIME=", bugs[i].total_hours_this_period)
@@ -431,5 +427,5 @@ class BugzillaTimeSummary:
         return total_time
 
 if __name__ == "__main__":
-    #calulate_worktime()
+    #Run the program
     INSTA = BugzillaTimeSummary(sys.argv[1:])
