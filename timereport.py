@@ -57,6 +57,7 @@ class BugzillaTimeSummary:
         print("  [-i]              [--invoice]                  Print an invoice using --rate")
         print("  [-e <YYYY-MM-DD>] [--end_date=<YYYY-MM-DD>]    End Date")
         print("  [-b <YYYY-MM-DD>] [--begin_date=<YYYY-MM-DD>]  Begin Date")
+        print("                    begin_date arg also accepts 'last_month' and 'this_month'")
         print(" ")
         print("    If only --begin_date is set, then --end_date defaults to today")
         print("    If both --begin_date and --end_date are unset, then defaults to last month")
