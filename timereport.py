@@ -124,8 +124,6 @@ class BugzillaTimeSummary:
             print("       Exiting.")
             sys.exit(1)
 
-
-
     def check_begin_date(self):
         """ make sure dates are date objects """
         #If begin_date is not set - make it today
@@ -134,6 +132,7 @@ class BugzillaTimeSummary:
         elif self.begin_date == "last_month":
             self.set_timeperiod_lastmonth()
         else:
+            self.print_v("BEGDATE-", self.begin_date)
             self.begin_date = parse(self.begin_date)
 
     def check_end_date(self):
@@ -142,7 +141,8 @@ class BugzillaTimeSummary:
         if self.end_date == "":
             self.end_date = datetime.datetime.today().replace(hour=23, minute=59, second=59)
         else:
-            self.end_date = parse(self.end_date)
+            self.print_v("ENDDATE-", self.end_date)
+            self.end_date = parse(str(self.end_date))
 
     def print_v(self, msg, var):
         """ Print if debug is true """
@@ -172,7 +172,7 @@ class BugzillaTimeSummary:
 
     def set_timeperiod_lastmonth(self):
         """set the start and end times for these calculations"""
-        tmp_date = datetime.date.today().replace(day=1)
+        tmp_date = datetime.datetime.today().replace(day=1)
         #end date = last day of last month
         self.end_date = tmp_date - datetime.timedelta(days=1)
         #begin date = first day of last month
@@ -235,6 +235,18 @@ class BugzillaTimeSummary:
 
         return worktime
 
+    def wrap_summary_lines(self, summary_width, bug):
+        """ Wrap the bug summary to summary_width columns"""
+        summary_list = []
+        if self.wrap and len(bug.summary) > 0:
+            summary_list = textwrap.wrap(bug.summary,
+                                         width=summary_width,
+                                         subsequent_indent="  "
+                                        )
+        else:
+            summary_list = [bug.summary]
+        return summary_list
+
     def pretty_print_bug(self, bug, id_width):
         """
         Format a bug line suitable for a time report
@@ -243,34 +255,36 @@ class BugzillaTimeSummary:
 
         #print("AAAAAA = ", bug.total_hours_this_period)
         first_line = True
+        show_hours = False
         space = " "
-        summary_width = 40
-        if self.wrap and len(bug.summary) > 0:
-            summary_list = textwrap.wrap(bug.summary,
-                                         width=summary_width,
-                                         subsequent_indent="  "
-                                        )
-        else:
-            summary_list = [bug.summary]
+        summary_width =40
         if self.show_assigned_to:
-            for summary in summary_list:
-                if first_line:
-                    print(f"#{bug.id:<{id_width}} : "
-                          f"{bug.assigned_to:<36} : "
-                          f"{bug.status:<15} : "
-                          f"{summary}"
-                          )
-                    first_line = False
-                else:
-                    print(f" {space:<{id_width}} : {space:<36} : {space:<15} : {summary}")
+            assigned_to = bug.assigned_to
+            awidth = 25
+            adelim = ":"
         else:
-            for summary in summary_list:
-                #print(f"#{bug.id:<5} : {bug.status:<15} : {bug_summary}")
-                if first_line:
-                    print(f"#{bug.id:<{id_width}} : {bug.status:<15} : {summary}")
-                    first_line = False
-                else:
-                    print(f" {space:<{id_width}} : {space:<15} : {summary}")
+            assigned_to = " "
+            awidth = 0
+            adelim = " "
+
+        #Setup multilength lines if width > 40
+        summary_list = self.wrap_summary_lines(summary_width, bug)
+
+        #for each line of the summary (if wrapped)
+        for summary in summary_list:
+            if first_line:
+                print(f"#{bug.id:<{id_width}} : "
+                      f"{assigned_to:<{awidth}}{adelim} "
+                      f"{bug.status:<15} : "
+                      f"{summary}"
+                      )
+                first_line = False
+            else:
+                print(f" {space:<{id_width}} : "
+                      f"{space:<{awidth}}{adelim} "
+                      f"{space:<15} : "
+                      f"{summary}"
+                      )
 
     def add_historical_time(self, raw_bug_history, begin_date, end_date):
         """
@@ -365,7 +379,7 @@ class BugzillaTimeSummary:
             bugs[i].total_hours_this_period = 0
             self.print_v("DIR=", dir(bugs[i]))
             self.print_v("BUG TYPE", type(bugs[i]))
-            #self.print_v("WORK ", bugs[i].work_time)
+            self.print_v("BUG TIME", bugs[i].total_hours_this_period)
             if self.debug:
                 print(bugs[i])
             self.print_v("BUGFIELDS", bugs[i].bugzilla.bugfields)
