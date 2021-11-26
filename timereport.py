@@ -196,8 +196,12 @@ class BugzillaTimeSummary:
         #base_url = "https://bugzilla.example.com"
         #NOTE: Must NOT have a / at the end of the base_url
 
-        #Look in a .bugzillatc file
-        base_url = bugzilla.Bugzilla.get_rcfile_default_url()
+        #Look in a .bugzillarc file
+        try:
+            base_url = bugzilla.Bugzilla.get_rcfile_default_url()
+        except AttributeError:
+            print("Error in getting URL. Is your .bugzillarc file setup? ")
+            sys.exit(2)
 
         self.print_v("Connecting to: ", base_url)
 
