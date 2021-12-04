@@ -174,11 +174,11 @@ class BugzillaTimeSummary:
 
     def set_timeperiod_lastmonth(self):
         """set the start and end times for these calculations"""
-        tmp_date = datetime.datetime.today().replace(day=1)
+        tmp_date = datetime.datetime.today().replace(day=1, hour=23, minute=59)
         #end date = last day of last month
         self.end_date = tmp_date - datetime.timedelta(days=1)
         #begin date = first day of last month
-        self.begin_date = self.end_date.replace(day=1)
+        self.begin_date = self.end_date.replace(day=1, hour=00, minute=00)
 
     def authenticate_to_bz(self):
         """
