@@ -283,7 +283,7 @@ class BugzillaTimeSummary:
         for summary in summary_list:
             if first_line:
                 print(f"#{bug.id:<{id_width}} : "
-                      f"{hours:<{hwidth}}{hdelim} "
+                      f"{hours:<{hwidth}.2f}{hdelim} "
                       f"{assigned_to:<{awidth}}{adelim} "
                       f"{bug.status:<15} : "
                       f"{summary}"
