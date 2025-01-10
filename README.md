@@ -1,5 +1,14 @@
 # bugzilla_timereports
 
+#Requirements
+
+python and the dateutil and bugzilla libraries: 
+
+```
+ sudo apt install python3-dateutil
+ sudo apt install python3-bugzilla
+```
+
 #Why this library? 
 
 * It's nice to have periodic (e.g. weekly) time reports generated that have the amount of time spent just for that week
