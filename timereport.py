@@ -201,12 +201,14 @@ class BugzillaTimeSummary:
             base_url = bugzilla.Bugzilla.get_rcfile_default_url()
         except AttributeError:
             print("Error in getting URL. Is your .bugzillarc file setup? ")
+            print("  Check for this file in your home directory")
             sys.exit(2)
 
         self.print_v("Connecting to: ", base_url)
 
         if base_url is None or base_url == "":
             print("Error in getting URL. Is your .bugzillarc file setup? ")
+            print("  Look for this file in your home directory")
             print("Do you have something in that file like")
             print("[DEFAULT]")
             print("url=https://www.example.com")
